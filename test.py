@@ -1,7 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
 if not cap.isOpened():
     print("Error: Could not open camera.")
@@ -19,7 +19,7 @@ while True:
     ax.clear()
     ax.imshow(frame_rgb)
     plt.draw()
-    plt.pause(0.01)  # Short pause to update the plot
+    # plt.pause(0.01)  # Short pause to update the plot
 
     if plt.waitforbuttonpress(0.01):  # Stop if any key is pressed
         break
