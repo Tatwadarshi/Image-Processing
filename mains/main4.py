@@ -3,23 +3,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import glob
-from dropdown import MyDropDown
 from tkinter import *
+import sys
+sys.path.append("./")
+from dropdown import MyDropDown
 
 
 import os
 
-reducing_factor = 750
+reducing_factor = 400
 
 lower_green = np.array([35, 40, 40])  # Lower bound (H: 35, S: 40, V: 40)
 upper_green = np.array([85, 255, 255])  # Upper bound (H: 85, S: 255, V: 255)
+
 
 folder_path = os.path.join(".", "DATA_SET")
 image_paths = glob.glob(f"{folder_path}/*.[jJpP][pPnN][gG]")  # Matches .jpg, .png, etc.
 image__names = images = [f for f in os.listdir(folder_path) if f.lower().endswith((".jpg", ".png"))]
 
 def processImage(image_path, lower_green=lower_green, upper_green=upper_green, reducing_factor=reducing_factor):
-    
     image = cv2.imread(image_path)
     resized_image = cv2.resize(image, (reducing_factor, reducing_factor))
 
@@ -29,9 +31,11 @@ def processImage(image_path, lower_green=lower_green, upper_green=upper_green, r
 
     # Create a mask for green color
     mask = cv2.inRange(hsv, lower_green, upper_green)
+    # mask = cv2.inRange(hsv, lower_green, upper_green).astype(np.bool_)
 
     # Fix: Ensure the mask has the correct shape for bitwise operation
     mask_3ch = cv2.merge([mask, mask, mask])  # Convert (750,750) to (750,750,3)
+    # mask_3ch = np.dstack([mask * 255] * 3)
 
     # Extract the leaf using bitwise AND
     result = cv2.bitwise_and(resized_image, mask_3ch)
@@ -46,7 +50,7 @@ def showImages(canvas, images: tuple, labels: tuple):
         ax[i].set_title(labels[i])
     canvas.draw()
 
-def processNShow(e):
+def processNShow(e, lower_green=lower_green, upper_green=upper_green):
     selected_image = drop.get_selection()
     if selected_image in image__names:
         processed_imgs = processImage(image_paths[image__names.index(selected_image)], lower_green, upper_green)
@@ -55,10 +59,17 @@ def processNShow(e):
         return
     
     showImages(canvas, processed_imgs, ("Original", "Mask", "Result"))
+    # canvas.draw()
     # print(drop.get_selection())
 
 def val_test(val):
-    print(val)
+    global lower_green, upper_green
+
+    lower_green = np.array([sliderLH.get(), sliderLS.get()* 2.55, sliderLV.get()* 2.55], np.int32)
+    upper_green = np.array([sliderUH.get(), sliderUS.get()* 2.55, sliderUV.get()* 2.55], np.int32)
+
+    processNShow(None, lower_green, upper_green)
+
 
 plt.figure(num="My Window")
 fig, ax = plt.subplots(1, 3, figsize=(10, 5))
@@ -68,7 +79,7 @@ fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.1, wspace=0.3)
 
 root = Tk()
 root.title("Leaf Image Extraction")
-drop = MyDropDown(image__names, root, bind_fun=processNShow, label_str="Choose Sample: ", grid_loc=(0, 0))
+drop = MyDropDown(image__names, root, bind_fun=processNShow, label_str="Choose Sample: ", grid_loc=(0, 0)) 
 
 labelUH = Label(root, text="Upper H:", font=("Arial", 10))
 labelUH.grid(row=1, column=0, pady=10)
@@ -103,15 +114,15 @@ labelLV = Label(root, text="Lower V:", font=("Arial", 10))
 labelLV.grid(row=3, column=2, pady=10, padx=10)
 
 
-sliderLH = Scale(root, from_=0, to=360, orient="horizontal", length=300, command=val_test)
+sliderLH = Scale(root, from_=0, to=179, orient="horizontal", length=300, command=val_test)
 sliderLH.grid(row=4, column=0)
 sliderLH.set(lower_green[0])
 
-sliderLS = Scale(root, from_=0, to=100, orient="horizontal", length=300, command=val_test)
+sliderLS = Scale(root, from_=0, to=255, orient="horizontal", length=300, command=val_test)
 sliderLS.grid(row=4, column=1)
 sliderLS.set(lower_green[1])
 
-sliderLV = Scale(root, from_=0, to=100, orient="horizontal", length=300, command=val_test)
+sliderLV = Scale(root, from_=0, to=255, orient="horizontal", length=300, command=val_test)
 sliderLV.grid(row=4, column=2, padx=10)
 sliderLV.set(lower_green[2])
 
@@ -123,9 +134,11 @@ canvas.get_tk_widget().grid(row=5, column=0, columnspan=4, sticky="nsew", pady=5
 root.grid_rowconfigure(5, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
-processed_imgs = processImage(image_paths[image__names.index("1.jpg")])
-showImages(canvas, processed_imgs, ("Original", "Mask", "Result"))
-canvas.draw()  # Render the plot
+# processed_imgs = processImage(image_paths[0])
+# showImages(canvas, processed_imgs, ("Original", "Mask", "Result"))
+# canvas.draw()  # Render the plot
+
+processNShow(None)
 
 
 root.protocol("WM_DELETE_WINDOW", lambda: (plt.close("all"), root.quit()))

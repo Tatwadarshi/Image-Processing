@@ -1,7 +1,8 @@
 import cv2
 
 # Open the default camera
-cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+# cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cam = cv2.VideoCapture(0)
 
 # Get the default frame width and height
 frame_width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))

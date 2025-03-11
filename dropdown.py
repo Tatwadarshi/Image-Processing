@@ -21,7 +21,7 @@ class MyDropDown:
         self.drop_down = ttk.Combobox(self.window, values=self.drop_list, font=('Arial', 10), width=10)
         self.drop_down.bind("<<ComboboxSelected>>", bind_fun)
         self.drop_down.set(self.selected_obj)
-        self.drop_down.grid(row=grid_loc[0], column=grid_loc[1] + 1, pady=10)
+        self.drop_down.grid(row=grid_loc[0], column=grid_loc[1] + 1, pady=10, padx=10)
         # self.drop_down.grid(row=grid_loc[0], column=grid_loc[1] + 1, pady=10, columnspan=3)
         self.get_selection()
 

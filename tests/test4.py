@@ -4,7 +4,8 @@ import matplotlib.animation as animation
 import numpy as np
 
 # Open the USB camera with DirectShow (for Windows)
-cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+# cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cam = cv2.VideoCapture(0)
 
 lower_green = np.array([35, 40, 40])  # Lower bound (H: 35, S: 40, V: 40)
 upper_green = np.array([85, 255, 255])  # Upper bound (H: 85, S: 255, V: 255)
@@ -63,6 +64,6 @@ def on_close(event):
 fig.canvas.mpl_connect('close_event', on_close)
 
 # Create an animation loop
-ani = animation.FuncAnimation(fig, update, interval=50, blit=False)
+ani = animation.FuncAnimation(fig, update, interval=5, blit=False)
 
 plt.show()

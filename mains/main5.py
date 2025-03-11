@@ -3,9 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import glob
-from dropdown import MyDropDown
 from tkinter import *
-
+import sys
+sys.path.append("./")
+from dropdown import MyDropDown
 
 import os
 
@@ -28,14 +29,15 @@ def processImage(image_path, reducing_factor=reducing_factor):
     reds = rgb_img[:, :, 0]
     greens = rgb_img[:, :, 1]
     blues = rgb_img[:, :, 2]
+    ExG = (greens*2) - reds - blues
 
-    return (rgb_img, reds, greens, blues)
+    return (rgb_img, reds, greens, blues, ExG)
 
-def showImages(canvas, images: tuple, labels: tuple):
+def showImages(canvas, images: tuple, labels: tuple, cmaps: tuple):
     for i, image in enumerate(images):
         ax[i].clear()
         # ax[i].axis('off')
-        ax[i].imshow(image, cmap=labels[images.index(image)] if len(image.shape) == 1 else None)
+        ax[i].imshow(image, cmap=cmaps[i] if len(image.shape) == 2 else None)
         ax[i].set_title(labels[i])
     canvas.draw()
 
@@ -47,10 +49,12 @@ def processNShow(e):
         print(f"Error: Image '{selected_image}' not found.")
         return
     
-    showImages(canvas, processed_imgs, ("Original", "Reds", "Greens", "Blues"))
+    showImages(canvas, processed_imgs, 
+               ("Original", "Reds", "Greens", "Blues", "ExG"), 
+               cmaps=("Original", "Reds", "Greens", "Blues", "Greens"))
 
 plt.figure(num="My Window")
-fig, ax = plt.subplots(1, 4, figsize=(10, 5))
+fig, ax = plt.subplots(1, 5, figsize=(10, 10))
 fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.1, wspace=0.3)
 
 root = Tk()
@@ -66,7 +70,10 @@ root.grid_rowconfigure(5, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
 processed_imgs = processImage(image_paths[image__names.index("1.jpg")])
-showImages(canvas, processed_imgs, ("Original", "reds", "greens", "blues"))
+showImages(canvas, processed_imgs, 
+           ("Original", "Reds", "Greens", "Blues", "ExG"), 
+           cmaps=("Original", "Reds", "Greens", "Blues", "Greens"))
+
 canvas.draw()  # Render the plot
 
 

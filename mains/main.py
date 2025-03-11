@@ -36,13 +36,12 @@ def processImage(image_path, reducing_factor=reducing_factor):
 def showImages(images: tuple, labels: tuple):
     fig, ax = plt.subplots(1, len(images), figsize=(10, 10))
 
-    for image in images:
-        # ax[images.index(image)].axis('off')
-        # ax[images.index(image)].imshow(image)
-        # ax[images.index(image)].set_title(labels[images.index(image)])
-        print(images.index(image))
+    for i, image in enumerate(images):
+        ax[i].axis('off')
+        ax[i].imshow(image)
+        ax[i].set_title(labels[i])
 
-    # plt.show()
+    plt.show()
     
 
 processed_imgs = processImage(image_paths[0])
