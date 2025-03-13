@@ -4,8 +4,8 @@ import matplotlib.animation as animation
 import numpy as np
 
 # Open the USB camera with DirectShow (for Windows)
-# cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-cam = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+# cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 lower_green = np.array([35, 40, 40])  # Lower bound (H: 35, S: 40, V: 40)
 upper_green = np.array([85, 255, 255])  # Upper bound (H: 85, S: 255, V: 255)
@@ -33,7 +33,7 @@ mask_im = ax[1].imshow(mask)
 ax[1].axis('off')
 ax[1].set_title('Mask')
 
-result_im = ax[2].imshow(result)
+result_im = ax[2].imshow(result, cmap="Greys")
 ax[2].axis('off')
 ax[2].set_title('Result')
 
@@ -44,14 +44,17 @@ def update(frame):
     ret, frame = cam.read()
     if ret:
         # out.write(frame)  # Save frame to video
-        hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
         mask = cv2.inRange(hsv, lower_green, upper_green)
         result = cv2.bitwise_and(frame, frame, mask=mask)
 
         org_im.set_array(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))  # Convert and update image
         mask_im.set_array(mask)
         result_im.set_array(result)
-    return org_im, mask_im, result_im
+        grey_result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+        ret, thresh255 = cv2.threshold(grey_result, 127, 255, cv2.THRESH_BINARY)
+    return org_im, mask_im, thresh255
 
 def on_close(event):
     """Handles closing event of Matplotlib window"""

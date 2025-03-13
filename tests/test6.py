@@ -8,7 +8,6 @@ import sys
 sys.path.append("./")
 from dropdown import MyDropDown
 
-
 import os
 
 reducing_factor = 750
@@ -21,6 +20,7 @@ image_paths = glob.glob(f"{folder_path}/*.[jJpP][pPnN][gG]")  # Matches .jpg, .p
 image__names = images = [f for f in os.listdir(folder_path) if f.lower().endswith((".jpg", ".png"))]
 
 def processImage(image_path, reducing_factor=reducing_factor):
+    
     image = cv2.imread(image_path)
     resized_image = cv2.resize(image, (reducing_factor, reducing_factor))
 
@@ -29,14 +29,17 @@ def processImage(image_path, reducing_factor=reducing_factor):
     reds = rgb_img[:, :, 0]
     greens = rgb_img[:, :, 1]
     blues = rgb_img[:, :, 2]
+    ExG = (greens*2) - reds - blues
+    ExR = (1.4*reds) - greens
+    ExGR = ExG - ExR
 
-    return (rgb_img, reds, greens, blues)
+    return (rgb_img, greens, ExG, ExR, ExGR)
 
-def showImages(canvas, images: tuple, labels: tuple):
+def showImages(canvas, images: tuple, labels: tuple, cmaps: tuple):
     for i, image in enumerate(images):
         ax[i].clear()
         # ax[i].axis('off')
-        ax[i].imshow(image, cmap=labels[i] if len(image.shape) == 2 else None)
+        ax[i].imshow(image, cmap=cmaps[i] if len(image.shape) == 2 else None)
         ax[i].set_title(labels[i])
     canvas.draw()
 
@@ -48,10 +51,12 @@ def processNShow(e):
         print(f"Error: Image '{selected_image}' not found.")
         return
     
-    showImages(canvas, processed_imgs, ("Original", "Reds", "Greens", "Blues"))
+    showImages(canvas, processed_imgs, 
+               ("Original", "Greens", "EXG", "ExR", "ExGR"), 
+               cmaps=("Original", "Greens", "Greens", "Reds", "Greens"))
 
 plt.figure(num="My Window")
-fig, ax = plt.subplots(1, 4, figsize=(10, 10))
+fig, ax = plt.subplots(1, 5, figsize=(10, 10))
 fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.1, wspace=0.3)
 
 root = Tk()
@@ -67,7 +72,10 @@ root.grid_rowconfigure(5, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
 processed_imgs = processImage(image_paths[image__names.index("1.jpg")])
-showImages(canvas, processed_imgs, ("Original", "Reds", "Greens", "Blues"))
+showImages(canvas, processed_imgs, 
+            ("Original", "Greens", "EXG", "ExR", "ExGR"), 
+            cmaps=("Original", "Greens", "Greens", "Reds", "Greens"))
+
 canvas.draw()  # Render the plot
 
 
